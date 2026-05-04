@@ -13,7 +13,7 @@ export class UserService {
     @InjectRepository(User) private readonly userRepository: Repository<User>
   ){}
 
-  async create(createUserDto: CreateUserDto) {
+  async create(createUserDto: CreateUserDto): Promise<User> {
     try {
       const {password, ...rest} = createUserDto
       const hashPassword: string = await bcrypt.hash(password,10)
