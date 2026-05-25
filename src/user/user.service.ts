@@ -1,5 +1,5 @@
 
-import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -24,6 +24,18 @@ export class UserService {
         throw new ConflictException('El correo electrónico ya está en uso');      
       }
       throw new InternalServerErrorException('Error al crear el usuario');      
+    }
+  }
+
+  async deleteUser(id:string): Promise<void>{
+    try {
+      const user: User | null = await this.userRepository.findOne({where:{id}})
+      if(!user){
+        throw new NotFoundException('Usuario no encontrado')
+      }
+      await this.userRepository.delete(id)
+    } catch (error) {
+      throw new InternalServerErrorException('Error al eliminar el usuario');      
     }
   }
 }
