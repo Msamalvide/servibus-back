@@ -1,5 +1,5 @@
 
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConflictException, Injectable, InternalServerErrorException } from '@nestjs/common';
 import { CreateUserDto } from './dto/create-user.dto';
 import * as bcrypt from 'bcrypt';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -18,10 +18,12 @@ export class UserService {
       const {password, ...rest} = createUserDto
       const hashPassword: string = await bcrypt.hash(password,10)
       const newUser: User | null = this.userRepository.create({...rest, password:hashPassword});
-      const saveUser: User | null = await this.userRepository.save(newUser);
-      return saveUser;
+      return await this.userRepository.save(newUser);
     } catch (error) {
-        throw new InternalServerErrorException('Error al crear el usuario');      
+      if (error.code === '23505') {
+        throw new ConflictException('El correo electrónico ya está en uso');      
+      }
+      throw new InternalServerErrorException('Error al crear el usuario');      
     }
   }
 }
